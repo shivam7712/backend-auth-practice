@@ -2,6 +2,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import 'dotenv/config'
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken'
 
 const app = express();
 app.use(express.json());
@@ -69,6 +70,38 @@ app.post("/signup", checkDuplicateUser, async(req, res)=>{
         console.log(err.message)
         res.status(500).json({msg: "sever error"})
     }
+    
+})
+
+app.post("/signin", async (req, res)=>{
+    try {
+        const {username, password} = req.body;
+        
+        const specificUser = await User.findOne({
+            username: username
+        })
+
+        if(!specificUser) {
+            return res.status(401).json({msg: "username or password is incrrect"})
+        }
+
+        const isTrue = await bcrypt.compare(password, specificUser.password)
+        if(!isTrue) {
+            return res.json({msg: "username or password is incorrect"});
+        }
+        
+        const token = jwt.sign({id: specificUser._id}, jwt_key, {expiresIn: '15m'});
+        res.json({
+            msg: `login success`,
+            token: token
+        });
+        
+    }
+    catch(err) {
+        console.log(err.message)
+        res.status(500).json({msg: `server error`});
+    }
+    
     
 })
 
