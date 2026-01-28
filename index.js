@@ -87,7 +87,7 @@ app.post("/signin", async (req, res)=>{
 
         const isTrue = await bcrypt.compare(password, specificUser.password)
         if(!isTrue) {
-            return res.json({msg: "password is incorrect"});
+            return res.status(401).json({msg: "password is incorrect"});
         }
         
         const token = jwt.sign({id: specificUser._id}, jwt_key, {expiresIn: '15m'});
