@@ -52,6 +52,24 @@ const checkDuplicateUser = async (req, res, next) => {
     
 }
 
+const auth = (req, res, next) => {
+    try {
+        const authHeader = req.headers['authorization'];
+        if(!authHeader) {
+            return res.status(401).json({msg: "no token found"});
+        }
+        const token = authHeader.split(' ')[1];
+       
+        const decoded = jwt.verify(token, jwt_key)
+        req.userId = decoded.id;
+        next()
+    }
+    catch(err) {
+        console.log(err.message)
+        return res.status(401).json({msg: "invalid token"});
+    }
+}
+
 app.post("/signup", checkDuplicateUser, async(req, res)=>{
     try{
         const {name, username, password} = req.body;
@@ -103,6 +121,28 @@ app.post("/signin", async (req, res)=>{
     }
     
     
+})
+
+app.post("/todo", auth, async(req, res)=>{
+    
+    try {
+        const title = req.body.title;
+        if(!title) {
+            return res.status(401).json({msg: "title not found"});
+        }
+
+        await Todo.create({
+            userId: req.userId,
+            title: title
+        })
+        res.json({msg: "added todo"});
+    }
+    catch(err) {
+        console.log(err.message)
+        res.status(500).json({msg: "server error"})
+    }
+
+
 })
 
 const startServer = async()=>{
