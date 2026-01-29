@@ -145,6 +145,25 @@ app.post("/todo", auth, async(req, res)=>{
 
 })
 
+app.get('/todos', auth, async(req, res)=>{
+    try {
+        const todos = await Todo.find({userId: req.userId});
+        if(!todos) {
+            return res.status(401).json({msg: "todos not found"})
+        }
+        console.log(todos)
+        res.json({
+            msg: "success",
+            tasks: todos
+        })
+    }
+    catch(err) {
+        console.log(err.message)
+    }
+    
+
+})
+
 const startServer = async()=>{
     try {
         await mongoose.connect(dbURI);
