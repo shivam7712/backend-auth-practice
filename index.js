@@ -3,9 +3,17 @@ import mongoose from 'mongoose'
 import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
+import path from 'path'
+import cors from 'cors'
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 const app = express();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors());
 
 const dbURI = process.env.MONGO_URI
 const jwt_key = process.env.JWT_SECRET
@@ -70,6 +78,8 @@ const auth = (req, res, next) => {
     }
 }
 
+
+
 app.post("/signup", checkDuplicateUser, async(req, res)=>{
     try{
         const {name, username, password} = req.body;
@@ -93,8 +103,8 @@ app.post("/signup", checkDuplicateUser, async(req, res)=>{
 
 app.post("/signin", async (req, res)=>{
     try {
+        console.log(req.body)
         const {username, password} = req.body;
-        
         const specificUser = await User.findOne({
             username: username
         })
@@ -148,9 +158,7 @@ app.post("/todo", auth, async(req, res)=>{
 app.get('/todos', auth, async(req, res)=>{
     try {
         const todos = await Todo.find({userId: req.userId});
-        if(!todos) {
-            return res.status(401).json({msg: "todos not found"})
-        }
+       
         console.log(todos)
         res.json({
             msg: "success",

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo</title>
+</head>
+<body>
+    <h1>signin</h1>
+
+    <input type="text" placeholder="username" id="user">
+    <input type="password" placeholder="password" id="pass">
+    <button onclick="handleLogin()">login</button>
+
+    <script>
+
+        const handleLogin = async() => {
+            const user = document.getElementById("user").value;
+            const pass = document.getElementById("pass").value;
+
+            const response = await fetch("http://localhost:8000/signin", {
+                method: "POST",
+                headers: {
+                    "Content-Type":"application/json" 
+                },
+                body: JSON.stringify({
+                    username: user,
+                    password: pass
+                })
+            });
+
+            const data = await response.json();
+
+            if(data.token) {
+                localStorage.setItem("token", data.token);
+                window.location.href = "todos.html"
+            } 
+            else {
+                alert("Login failed")
+            }
+
+        }
+    </script>
+</body>
+</html>
