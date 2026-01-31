@@ -6,53 +6,52 @@
 </head>
 <body>
     <h1>My Private Todos</h1>
+    <button onclick="showTaks()">show todo</button>
     <button onclick="logout()">Logout</button>
     
     <ul id="todoList"></ul>
 
     <script>
-        async function getTodos() {
-            // 1. GET THE TOKEN
+        async function showTaks() {
+
             const token = localStorage.getItem("token");
 
-            // If no token, kick them back to login
+
             if (!token) {
                 window.location.href = "index.html";
                 return;
             }
 
-            // 2. FETCH DATA WITH TOKEN
+
             const response = await fetch("http://localhost:8000/todos", {
                 method: "GET",
                 headers: {
-                    // This is the key part!
+
                     "Authorization": `Bearer ${token}` 
                 }
             });
 
             const data = await response.json();
             
-            // 3. DISPLAY THE DATA
+
             const list = document.getElementById("todoList");
             
-            // Clear list first
+
             list.innerHTML = ""; 
 
-            // Loop through tasks and add to HTML
+
             data.tasks.forEach(task => {
                 const item = document.createElement("li");
-                item.innerText = task.title; // Show the title
+                item.innerText = task.title; 
                 list.appendChild(item);
             });
         }
+
 
         function logout() {
             localStorage.removeItem("token");
             window.location.href = "index.html";
         }
-
-        // Run this function immediately when page loads
-        getTodos();
     </script>
 </body>
 </html>

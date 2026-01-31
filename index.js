@@ -100,11 +100,17 @@ app.post("/signup", checkDuplicateUser, async(req, res)=>{
             password: hashedPassword
         })
 
-        res.json({msg: "user created successfully"});
+        res.json({
+            msg: "user created successfully",
+            isCreated: true
+        });
     }
     catch(err) {
         console.log(err.message)
-        res.status(500).json({msg: "sever error"})
+        res.status(500).json({
+            msg: "sever error",
+            isCreated: false
+        })
     }
     
 })
