@@ -19,8 +19,6 @@ const dbURI = process.env.MONGO_URI
 const jwt_key = process.env.JWT_SECRET
 
 
-console.log(dbURI)
-
 const userSchema = new mongoose.Schema({
     name: {type: String, required: true},
     username: {type: String, required: true, unique: true},
@@ -78,7 +76,17 @@ const auth = (req, res, next) => {
     }
 }
 
+(async()=>{
+    try {
+        await mongoose.connect(dbURI);
+        console.log("connection successfull")
 
+    }
+    catch(err) {
+        console.log(err.message);
+        
+    }
+})()
 
 app.post("/signup", checkDuplicateUser, async(req, res)=>{
     try{
@@ -172,19 +180,4 @@ app.get('/todos', auth, async(req, res)=>{
 
 })
 
-const startServer = async()=>{
-    try {
-        await mongoose.connect(dbURI);
-        console.log("connection successfull")
-
-        app.listen(8000, ()=>{
-            console.log("server is running on 8000");
-        })
-    }
-    catch(err) {
-        console.log(err.message);
-        
-    }
-}
-
-startServer()
+app.listen(8000, ()=> console.log(`server is running on port 8000`));
