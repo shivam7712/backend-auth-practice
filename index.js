@@ -117,7 +117,6 @@ app.post("/signup", checkDuplicateUser, async(req, res)=>{
 
 app.post("/signin", async (req, res)=>{
     try {
-        console.log(req.body)
         const {username, password} = req.body;
         const specificUser = await User.findOne({
             username: username
@@ -171,7 +170,8 @@ app.post("/todo", auth, async(req, res)=>{
 
 app.get('/todos', auth, async(req, res)=>{
     try {
-        const todos = await Todo.find({userId: req.userId});
+        const todos = await Todo.find({userId: req.userId})
+        .populate('userId', 'name');
        
         console.log(todos)
         res.json({
