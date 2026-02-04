@@ -217,4 +217,5 @@ app.use((req, res, next, err)=>{
     next();
 })
 
-app.listen(8000, ()=> console.log(`server is running on port 8000`));
+const PORT = process.env.PORT;
+app.listen(PORT, ()=> console.log(`server is running on port ${PORT}`));
