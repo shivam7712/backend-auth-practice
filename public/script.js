@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000"; // Or just "" if hosted on same domain
+const API_URL = ""; // Or just "" if hosted on same domain
 
 // DOM Elements
 const authSection = document.getElementById('auth-section');
