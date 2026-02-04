@@ -1,5 +1,6 @@
 import express from 'express'
 import mongoose from 'mongoose'
+import { z } from 'zod'
 import 'dotenv/config'
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken'
@@ -18,6 +19,20 @@ app.use(cors());
 const dbURI = process.env.MONGO_URI
 const jwt_key = process.env.JWT_SECRET
 
+const signupSchema = z.object({
+    name: z.string().min(2, "name is required"),
+    username: z.string().min(2, "username is required"),
+    password: z.string().min(4, "length of password should atleast 4")
+})
+
+const signinSchema = z.object({
+    username: z.string().min(2),
+    password: z.string().min(2)
+})
+
+const createTodoSchema = z.object({
+    title: z.string().min(1, "Title cannot be empty")
+})
 
 const userSchema = new mongoose.Schema({
     name: {type: String, required: true},
@@ -38,6 +53,17 @@ const todoSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 const Todo = mongoose.model('Todo', todoSchema);
 
+const validate = (schema)=> (req, res, next)=>{
+    const parseResult = schema.safeParse(req.body);
+    if(!parseResult.success) {
+        return res.status(400).json({
+            msg: "validation failed",
+            err: parseResult.error.errors
+        })
+    }
+    console.log("validation success")
+    next();
+}
 
 const checkDuplicateUser = async (req, res, next) => {
 
@@ -88,7 +114,7 @@ const auth = (req, res, next) => {
     }
 })()
 
-app.post("/signup", checkDuplicateUser, async(req, res)=>{
+app.post("/signup", validate(signupSchema), checkDuplicateUser, async(req, res)=>{
     try{
         const {name, username, password} = req.body;
 
@@ -115,7 +141,7 @@ app.post("/signup", checkDuplicateUser, async(req, res)=>{
     
 })
 
-app.post("/signin", async (req, res)=>{
+app.post("/signin", validate(signinSchema), async (req, res)=>{
     try {
         const {username, password} = req.body;
         const specificUser = await User.findOne({
@@ -146,7 +172,7 @@ app.post("/signin", async (req, res)=>{
     
 })
 
-app.post("/todo", auth, async(req, res)=>{
+app.post("/todo", auth, validate(createTodoSchema),async(req, res)=>{
     
     try {
         const title = req.body.title;
@@ -184,6 +210,11 @@ app.get('/todos', auth, async(req, res)=>{
     }
     
 
+})
+
+app.use((req, res, next, err)=>{
+    res.status(500).json({msg: err.message})
+    next();
 })
 
 app.listen(8000, ()=> console.log(`server is running on port 8000`));
