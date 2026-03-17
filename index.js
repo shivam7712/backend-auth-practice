@@ -34,6 +34,13 @@ const createTodoSchema = z.object({
     title: z.string().min(1, "Title cannot be empty")
 })
 
+const updateTodoSchema = z.object({
+    title: z.string().min(1, "Title cannot be empty").optional(),
+    done: z.boolean().optional()
+}).refine(data => data.title !== undefined || data.done !== undefined, {
+    message: "At least one field (title or done) must be provided"
+})
+
 const userSchema = new mongoose.Schema({
     name: {type: String, required: true},
     username: {type: String, required: true, unique: true},
@@ -210,6 +217,43 @@ app.get('/todos', auth, async(req, res)=>{
     }
     
 
+})
+
+app.put('/todo/:id', auth, validate(updateTodoSchema), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+
+        const todo = await Todo.findOne({ _id: id, userId: req.userId });
+        if (!todo) {
+            return res.status(404).json({ msg: "Todo not found or not authorized" });
+        }
+
+        if (updates.title !== undefined) todo.title = updates.title;
+        if (updates.done !== undefined) todo.done = updates.done;
+
+        await todo.save();
+        res.json({ msg: "Todo updated", todo });
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).json({ msg: "server error" });
+    }
+})
+
+app.delete('/todo/:id', auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const todo = await Todo.findOneAndDelete({ _id: id, userId: req.userId });
+        if (!todo) {
+            return res.status(404).json({ msg: "Todo not found or not authorized" });
+        }
+
+        res.json({ msg: "Todo deleted" });
+    } catch (err) {
+        console.log(err.message);
+        res.status(500).json({ msg: "server error" });
+    }
 })
 
 app.use((req, res, next, err)=>{
